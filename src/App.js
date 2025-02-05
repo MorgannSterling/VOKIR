@@ -1,9 +1,10 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import ThemeSwitcher from "./components/ThemeSwitcher"; // New Theme Switcher
 
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
@@ -23,7 +24,6 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("Error caught by boundary:", error, errorInfo);
-
     fetch("https://error-logging-service.com/log", {
       method: "POST",
       body: JSON.stringify({ error, errorInfo }),
@@ -56,6 +56,12 @@ function LoadingSpinner() {
 
 function App() {
   const location = useLocation();
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const pageTitles = {
@@ -70,8 +76,9 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+      <div className={`min-h-screen flex flex-col ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}>
         <Navbar role="navigation" />
+        <ThemeSwitcher theme={theme} setTheme={setTheme} />
         <div className="flex-grow" role="main">
           <Suspense fallback={<LoadingSpinner />}>
             <ErrorBoundary>
