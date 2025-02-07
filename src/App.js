@@ -1,10 +1,11 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import { motion, AnimatePresence } from "framer-motion"; // Import Framer Motion
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
-import ThemeSwitcher from "./components/ThemeSwitcher"; // New Theme Switcher
+import ThemeSwitcher from "./components/ThemeSwitcher";
 
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
@@ -80,17 +81,27 @@ function App() {
         <Navbar role="navigation" />
         <ThemeSwitcher theme={theme} setTheme={setTheme} />
         <div className="flex-grow" role="main">
-          <Suspense fallback={<LoadingSpinner />}>
-            <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/token" element={<Token />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ErrorBoundary>
-          </Suspense>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <ErrorBoundary>
+                  <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/token" element={<Token />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </ErrorBoundary>
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
         </div>
         <Footer role="contentinfo" />
       </div>
