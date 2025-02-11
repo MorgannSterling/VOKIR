@@ -12,6 +12,7 @@ const About = lazy(() => import("./pages/About"));
 const Token = lazy(() => import("./pages/Token"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Dashboard = lazy(() => import("./pages/Dashboard")); // New Authenticated Route
+const AdminPanel = lazy(() => import("./pages/AdminPanel")); // New Admin Route
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Authentication Context
@@ -20,29 +21,30 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem("auth") === "true");
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || { isAuthenticated: false, role: "guest" });
 
-  const login = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem("auth", "true");
+  const login = (role = "user") => {
+    const newUser = { isAuthenticated: true, role };
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem("auth");
+    setUser({ isAuthenticated: false, role: "guest" });
+    localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 // Protected Route Wrapper
-function PrivateRoute({ element }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? element : <Navigate to="/" />;
+function PrivateRoute({ element, allowedRoles }) {
+  const { user } = useAuth();
+  return user.isAuthenticated && allowedRoles.includes(user.role) ? element : <Navigate to="/" />;
 }
 
 class ErrorBoundary extends React.Component {
@@ -103,6 +105,7 @@ function App() {
       "/token": "Token Details - My React App",
       "/contact": "Contact Us - My React App",
       "/dashboard": "Dashboard - My React App",
+      "/admin": "Admin Panel - My React App",
     };
     document.title = pageTitles[location.pathname] || "My React App";
   }, [location]);
@@ -130,7 +133,8 @@ function App() {
                       <Route path="/about" element={<About />} />
                       <Route path="/token" element={<Token />} />
                       <Route path="/contact" element={<Contact />} />
-                      <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+                      <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} allowedRoles={["user", "admin"]} />} />
+                      <Route path="/admin" element={<PrivateRoute element={<AdminPanel />} allowedRoles={["admin"]} />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </ErrorBoundary>
