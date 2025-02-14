@@ -11,8 +11,8 @@ const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Token = lazy(() => import("./pages/Token"));
 const Contact = lazy(() => import("./pages/Contact"));
-const Dashboard = lazy(() => import("./pages/Dashboard")); // New Authenticated Route
-const AdminPanel = lazy(() => import("./pages/AdminPanel")); // New Admin Route
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Authentication Context
@@ -21,16 +21,37 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || { isAuthenticated: false, role: "guest" });
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : { isAuthenticated: false, role: "guest", token: null };
+  });
 
-  const login = (role = "user") => {
-    const newUser = { isAuthenticated: true, role };
+  useEffect(() => {
+    // Auto-login if token is stored
+    if (user.token) {
+      fetch("https://api.example.com/auth/validate-token", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (!data.valid) logout();
+        })
+        .catch(() => logout());
+    }
+  }, []);
+
+  const login = (role = "user", token) => {
+    const newUser = { isAuthenticated: true, role, token };
     setUser(newUser);
     localStorage.setItem("user", JSON.stringify(newUser));
   };
 
   const logout = () => {
-    setUser({ isAuthenticated: false, role: "guest" });
+    setUser({ isAuthenticated: false, role: "guest", token: null });
     localStorage.removeItem("user");
   };
 
@@ -91,6 +112,7 @@ function LoadingSpinner() {
 
 function App() {
   const location = useLocation();
+  const { user } = useAuth();
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
   useEffect(() => {
