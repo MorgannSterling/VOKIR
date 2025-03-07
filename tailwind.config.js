@@ -1,5 +1,5 @@
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx,html,mdx}"],
+  content: ["./src/**/*.{js,jsx,ts,tsx,html,mdx}"], 
   theme: {
     extend: {
       colors: {
@@ -52,6 +52,6 @@ module.exports = {
     require("@tailwindcss/typography"),
     require("@tailwindcss/aspect-ratio"),
     require("@tailwindcss/line-clamp"),
-    require("@tailwindcss/forms"),
+    require("@tailwindcss/forms"), // Added @tailwindcss/forms for better form styling
   ],
 };
