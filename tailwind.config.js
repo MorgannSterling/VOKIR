@@ -1,5 +1,5 @@
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx,html,mdx}"], 
+  content: ["./src/**/*.{js,jsx,ts,tsx,html,mdx}"],
   theme: {
     extend: {
       colors: {
@@ -45,6 +45,7 @@ module.exports = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic": "conic-gradient(var(--tw-gradient-stops))",
+        "custom-gradient": "linear-gradient(to right, #ff7e5f, #feb47b)", // Added custom gradient
       },
     },
   },
@@ -52,6 +53,6 @@ module.exports = {
     require("@tailwindcss/typography"),
     require("@tailwindcss/aspect-ratio"),
     require("@tailwindcss/line-clamp"),
-    require("@tailwindcss/forms"), // Added @tailwindcss/forms for better form styling
+    require("@tailwindcss/forms"),
   ],
 };
